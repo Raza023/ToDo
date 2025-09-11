@@ -1,5 +1,3 @@
-Here’s a concise and engaging **README.md** description for your Todo List App. You can customize it further based on your preferences:
-
 ---
 
 # Todo List App
@@ -36,12 +34,6 @@ Here’s a concise and engaging **README.md** description for your Todo List App
 ### 🔒 Privacy & Permissions
 - **Notification permissions** are requested only when needed.
 - All data is stored locally in the browser (no server required).
-
----
-
-## Screenshots
-
-*(Add screenshots of your app in action here, e.g., task list, reminders, bulk actions, etc.)*
 
 ---
 
@@ -82,6 +74,6 @@ Pull requests and suggestions are welcome! For major changes, please open an iss
 ---
 
 ## License
-This project is open-source and free to use. See [LICENSE](LICENSE) for details.
+This project is open-source and free to use.
 
 ---
