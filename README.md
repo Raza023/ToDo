@@ -1,5 +1,3 @@
----
-
 # Todo List App
 
 **A modern, mobile-friendly todo list application with time tracking, reminders, and bulk operations.**
@@ -74,6 +72,6 @@ Pull requests and suggestions are welcome! For major changes, please open an iss
 ---
 
 ## License
-This project is open-source and free to use.
+This project is open-source and free to use. See [LICENSE](LICENSE) for details.
 
 ---
