@@ -9,8 +9,8 @@
     <meta name="description" content="A mobile-friendly todo list application with time tracking and bulk operations">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-	<!-- Favicon -->
-	<link rel="icon" type="image/png" href="./favicon.png">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./favicon.png">
     <script>
         tailwind.config = {
             theme: {
@@ -262,12 +262,10 @@
         </div>
     </div>
     <audio id="reminderSound" src="./noti.mp3" preload="auto"></audio>
-
     <script>
         // Audio Context for Web Audio API
         let audioContext;
         let reminderSoundBuffer;
-
         // Initialize Audio Context
         function initAudioContext() {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -279,31 +277,26 @@
                 })
                 .catch(e => console.error('Error loading sound:', e));
         }
-
         // Play sound using Web Audio API
         function playReminderSound() {
             if (!audioContext) initAudioContext();
             if (!reminderSoundBuffer) return;
-
             const source = audioContext.createBufferSource();
             source.buffer = reminderSoundBuffer;
             source.connect(audioContext.destination);
             source.start(0);
         }
-
         // Resume audio context on user interaction
         document.body.addEventListener('click', () => {
             if (audioContext && audioContext.state === 'suspended') {
                 audioContext.resume();
             }
         }, { once: true });
-
         // Data structure and initial state
         let tasks = JSON.parse(localStorage.getItem('todoTasks')) || [];
         let reminderTimeouts = {};
         let selectedTasks = new Set();
         let isSelectionMode = false;
-
         // DOM Elements
         const taskList = document.getElementById('taskList');
         const emptyState = document.getElementById('emptyState');
@@ -327,16 +320,25 @@
         const importData = document.getElementById('importData');
         const clearData = document.getElementById('clearData');
         const closeSettings = document.getElementById('closeSettings');
-
         // Initialize the app
         function initApp() {
+            checkAndResetCompletedTasks();
             updateStats();
             renderTasks();
             setupEventListeners();
             setupReminders();
             initAudioContext();
         }
-
+        // Check and reset completed tasks if a new day has started
+        function checkAndResetCompletedTasks() {
+            const lastInteractionDate = localStorage.getItem('lastInteractionDate');
+            const today = new Date().toDateString();
+            if (lastInteractionDate !== today) {
+                tasks = tasks.map(task => ({ ...task, completed: false }));
+                saveTasks();
+                localStorage.setItem('lastInteractionDate', today);
+            }
+        }
         // Set up event listeners
         function setupEventListeners() {
             addTaskBtn.addEventListener('click', openAddTaskModal);
@@ -353,7 +355,6 @@
             exportData.addEventListener('click', exportTasks);
             importData.addEventListener('click', triggerImport);
             clearData.addEventListener('click', clearAllData);
-
             // Handle click outside modals to close them
             [addTaskModal, editTaskModal, settingsModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
@@ -365,7 +366,6 @@
                 });
             });
         }
-
         // Render tasks to the DOM
         function renderTasks() {
             if (tasks.length === 0) {
@@ -373,10 +373,17 @@
                 taskList.innerHTML = '';
                 return;
             }
-
             emptyState.classList.add('hidden');
-
-            taskList.innerHTML = tasks.map(task => `
+            // Sort tasks: completed last, then by time (ascending), then by creation date
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.completed && !b.completed) return 1;
+                if (!a.completed && b.completed) return -1;
+                if (!a.time && b.time) return 1;
+                if (a.time && !b.time) return -1;
+                if (a.time && b.time) return a.time.localeCompare(b.time);
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            taskList.innerHTML = sortedTasks.map(task => `
                 <div class="task-item bg-white rounded-lg shadow-sm p-4 flex items-start animate-slide-in ${task.completed ? 'opacity-70' : ''}" data-id="${task.id}">
                     <input type="checkbox" class="mt-1 mr-3 task-checkbox ${isSelectionMode ? '' : 'hidden'}"
                            ${selectedTasks.has(task.id) ? 'checked' : ''}
@@ -399,26 +406,22 @@
                     </div>
                 </div>
             `).join('');
-
             // Add event listeners to dynamically created elements
             document.querySelectorAll('.task-checkbox').forEach(checkbox => {
                 checkbox.addEventListener('change', handleTaskSelection);
             });
-
             document.querySelectorAll('.edit-task').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const taskId = e.currentTarget.getAttribute('data-id');
                     openEditTaskModal(taskId);
                 });
             });
-
             document.querySelectorAll('.delete-task').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const taskId = e.currentTarget.getAttribute('data-id');
                     deleteTask(taskId);
                 });
             });
-
             // Add completion toggle for non-selection mode
             if (!isSelectionMode) {
                 document.querySelectorAll('.task-item').forEach(item => {
@@ -432,18 +435,15 @@
                 });
             }
         }
-
         // Update statistics
         function updateStats() {
             const total = tasks.length;
             const completed = tasks.filter(task => task.completed).length;
             const pending = total - completed;
-
             totalTasksEl.textContent = total;
             completedTasksEl.textContent = completed;
             pendingTasksEl.textContent = pending;
         }
-
         // Add a new task
         function addTask(title, time = null) {
             const newTask = {
@@ -453,14 +453,12 @@
                 completed: false,
                 createdAt: new Date().toISOString()
             };
-
             tasks.unshift(newTask);
             saveTasks();
             updateStats();
             renderTasks();
             setupReminder(newTask);
         }
-
         // Edit an existing task
         function editTask(id, title, time) {
             const taskIndex = tasks.findIndex(task => task.id === id);
@@ -472,10 +470,10 @@
                     setupReminder(tasks[taskIndex]);
                 }
                 saveTasks();
+                updateStats();
                 renderTasks();
             }
         }
-
         // Delete a task
         function deleteTask(id) {
             tasks = tasks.filter(task => task.id !== id);
@@ -486,7 +484,6 @@
             renderTasks();
             updateBulkActionsUI();
         }
-
         // Toggle task completion
         function toggleTaskCompletion(id) {
             const taskIndex = tasks.findIndex(task => task.id === id);
@@ -502,12 +499,10 @@
                 renderTasks();
             }
         }
-
         // Save tasks to localStorage
         function saveTasks() {
             localStorage.setItem('todoTasks', JSON.stringify(tasks));
         }
-
         // Setup reminders for all tasks
         function setupReminders() {
             tasks.forEach(task => {
@@ -516,12 +511,10 @@
                 }
             });
         }
-
         // Setup reminder for a single task
         function setupReminder(task) {
             if (!task.time || task.completed) return;
             clearReminder(task.id);
-
             const now = new Date();
             const [hours, minutes] = task.time.split(':');
             const reminderTime = new Date(
@@ -532,21 +525,17 @@
                 parseInt(minutes),
                 0
             );
-
             // If time already passed today, set for tomorrow
             if (reminderTime < now) {
                 reminderTime.setDate(reminderTime.getDate() + 1);
             }
-
             const timeout = reminderTime - now;
-
             reminderTimeouts[task.id] = setTimeout(() => {
                 showReminderNotification(task);
                 // Set the next daily reminder
                 setupReminder(task);
             }, timeout);
         }
-
         // Clear a reminder
         function clearReminder(taskId) {
             if (reminderTimeouts[taskId]) {
@@ -554,13 +543,11 @@
                 delete reminderTimeouts[taskId];
             }
         }
-
         // Show reminder notification
         // Updated showReminderNotification function
         function showReminderNotification(task) {
             // Play sound
             playReminderSound();
-
             // Show browser notification if permitted
             if (Notification.permission === 'granted') {
                 new Notification(`Task Reminder: ${task.title}`, {
@@ -577,7 +564,6 @@
                     }
                 });
             }
-
             // Optional: Show a visual alert in the app (e.g., toast or highlight the task)
             // Remove the alert() call to avoid blocking the sound
             const taskElement = document.querySelector(`.task-item[data-id="${task.id}"]`);
@@ -588,19 +574,16 @@
                 }, 5000);
             }
         }
-
         // Open add task modal
         function openAddTaskModal() {
             addTaskModal.classList.remove('hidden');
             document.getElementById('taskTitle').focus();
         }
-
         // Close add task modal
         function closeAddTaskModal() {
             addTaskModal.classList.add('hidden');
             taskForm.reset();
         }
-
         // Open edit task modal
         function openEditTaskModal(id) {
             const task = tasks.find(task => task.id === id);
@@ -612,52 +595,43 @@
                 document.getElementById('editTaskTitle').focus();
             }
         }
-
         // Close edit task modal
         function closeEditTaskModal() {
             editTaskModal.classList.add('hidden');
         }
-
         // Open settings modal
         function openSettingsModal() {
             settingsModal.classList.remove('hidden');
         }
-
         // Close settings modal
         function closeSettingsModal() {
             settingsModal.classList.add('hidden');
         }
-
         // Handle add task form submission
         function handleAddTask(e) {
             e.preventDefault();
             const title = document.getElementById('taskTitle').value.trim();
             const time = document.getElementById('taskTime').value || null;
-
             if (title) {
                 addTask(title, time);
                 closeAddTaskModal();
             }
         }
-
         // Handle edit task form submission
         function handleEditTask(e) {
             e.preventDefault();
             const id = document.getElementById('editTaskId').value;
             const title = document.getElementById('editTaskTitle').value.trim();
             const time = document.getElementById('editTaskTime').value || null;
-
             if (title) {
                 editTask(id, title, time);
                 closeEditTaskModal();
             }
         }
-
         // Toggle selection mode
         function toggleSelectionMode() {
             isSelectionMode = !isSelectionMode;
             selectedTasks.clear();
-
             if (isSelectionMode) {
                 bulkActions.classList.remove('hidden');
                 bulkActions.classList.add('translate-y-0');
@@ -668,29 +642,23 @@
                 selectAllBtn.innerHTML = '<i class="fas fa-tasks"></i>';
                 selectAllBtn.classList.remove('bg-blue-600');
             }
-
             renderTasks();
             updateBulkActionsUI();
         }
-
         // Handle task selection
         function handleTaskSelection(e) {
             const taskId = e.target.getAttribute('data-id');
-
             if (e.target.checked) {
                 selectedTasks.add(taskId);
             } else {
                 selectedTasks.delete(taskId);
             }
-
             updateBulkActionsUI();
         }
-
         // Update bulk actions UI
         function updateBulkActionsUI() {
             selectedCount.textContent = `${selectedTasks.size} selected`;
         }
-
         // Complete selected tasks
         function completeSelectedTasks() {
             tasks = tasks.map(task => {
@@ -699,13 +667,11 @@
                 }
                 return task;
             });
-
             saveTasks();
             cancelSelectionMode();
             updateStats();
             renderTasks();
         }
-
         // Delete selected tasks
         function deleteSelectedTasks() {
             tasks = tasks.filter(task => !selectedTasks.has(task.id));
@@ -714,7 +680,6 @@
             updateStats();
             renderTasks();
         }
-
         // Cancel selection mode
         function cancelSelectionMode() {
             isSelectionMode = false;
@@ -724,30 +689,24 @@
             selectAllBtn.classList.remove('bg-blue-600');
             renderTasks();
         }
-
         // Export tasks
         function exportTasks() {
             const dataStr = JSON.stringify(tasks, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-
             const exportFileDefaultName = 'todo-data.json';
-
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
         }
-
         // Trigger import
         function triggerImport() {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.json';
-
             input.onchange = e => {
                 const file = e.target.files[0];
                 const reader = new FileReader();
-
                 reader.onload = function (e) {
                     try {
                         const importedTasks = JSON.parse(e.target.result);
@@ -755,12 +714,10 @@
                             // Merge with existing tasks, avoiding duplicates by ID
                             const existingIds = new Set(tasks.map(t => t.id));
                             const newTasks = importedTasks.filter(t => !existingIds.has(t.id));
-
                             tasks = [...newTasks, ...tasks];
                             saveTasks();
                             updateStats();
                             renderTasks();
-
                             alert(`Imported ${newTasks.length} new tasks`);
                         } else {
                             alert('Invalid file format');
@@ -769,13 +726,10 @@
                         alert('Error parsing file: ' + error.message);
                     }
                 };
-
                 reader.readAsText(file);
             };
-
             input.click();
         }
-
         // Clear all data
         function clearAllData() {
             if (confirm('Are you sure you want to delete all tasks? This cannot be undone.')) {
@@ -786,19 +740,15 @@
                 closeSettingsModal();
             }
         }
-
         // Utility function to format time
         function formatTime(timeString) {
             if (!timeString) return '';
-
             const [hours, minutes] = timeString.split(':');
             const hour = parseInt(hours);
             const ampm = hour >= 12 ? 'PM' : 'AM';
             const formattedHour = hour % 12 || 12;
-
             return `${formattedHour}:${minutes} ${ampm}`;
         }
-
         // Utility function to escape HTML
         function escapeHtml(unsafe) {
             return unsafe
@@ -808,18 +758,15 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             // Request notification permission on load
             if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
                 Notification.requestPermission();
             }
-
             initApp();
         });
     </script>
-
     <script>
         // Service Worker Registration
         if ('serviceWorker' in navigator) {
