@@ -414,8 +414,8 @@
             taskList.innerHTML = sortedTasks.map(task => `
                 <div class="task-item bg-white dark:bg-gray-700 rounded-lg shadow-sm p-4 flex items-start animate-slide-in ${task.completed ? 'opacity-70' : ''}" data-id="${task.id}">
                     <input type="checkbox" class="mt-1 mr-3 task-checkbox ${isSelectionMode ? '' : 'hidden'}"
-                           ${selectedTasks.has(task.id) ? 'checked' : ''}
-                           data-id="${task.id}">
+                        ${selectedTasks.has(task.id) ? 'checked' : ''}
+                        data-id="${task.id}">
                     <div class="flex-1">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
