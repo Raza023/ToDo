@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" href="./favicon.png">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -109,10 +110,10 @@
         }
     </style>
 </head>
-
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body
+    class="bg-gray-50 dark:bg-dark min-h-screen flex flex-col text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <!-- Header -->
-    <header class="bg-primary text-white p-4 shadow-md">
+    <header class="bg-primary dark:bg-gray-800 text-white p-4 shadow-md transition-colors duration-300">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold">My Tasks</h1>
             <div class="flex space-x-3">
@@ -122,46 +123,48 @@
                 <button id="settingsBtn" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
                     <i class="fas fa-cog"></i>
                 </button>
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                    <i id="darkModeIcon" class="fas fa-moon"></i>
+                </button>
             </div>
         </div>
     </header>
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 pb-20">
         <!-- Stats Summary -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-4 mb-4 transition-colors">
             <div class="flex justify-between items-center">
                 <div class="text-center">
-                    <p class="text-2xl font-bold text-primary" id="totalTasks">0</p>
-                    <p class="text-xs text-gray-500">Total</p>
+                    <p class="text-2xl font-bold text-primary dark:text-blue-400" id="totalTasks">0</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">Total</p>
                 </div>
                 <div class="text-center">
-                    <p class="text-2xl font-bold text-secondary" id="completedTasks">0</p>
-                    <p class="text-xs text-gray-500">Done</p>
+                    <p class="text-2xl font-bold text-secondary dark:text-green-400" id="completedTasks">0</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">Done</p>
                 </div>
                 <div class="text-center">
-                    <p class="text-2xl font-bold text-accent" id="pendingTasks">0</p>
-                    <p class="text-xs text-gray-500">Pending</p>
+                    <p class="text-2xl font-bold text-accent dark:text-yellow-400" id="pendingTasks">0</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-300">Pending</p>
                 </div>
             </div>
         </div>
         <!-- Task List -->
-        <div id="taskList" class="space-y-3">
-            <!-- Tasks will be dynamically inserted here -->
-        </div>
+        <div id="taskList" class="space-y-3"></div>
         <!-- Empty State -->
         <div id="emptyState" class="text-center py-10 hidden">
             <div class="mb-4 text-gray-300">
                 <i class="fas fa-clipboard-list text-5xl"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-500">No tasks yet</h3>
+            <h3 class="text-lg font-medium text-gray-500 dark:text-gray-300">No tasks yet</h3>
             <p class="text-gray-400">Add a task to get started</p>
         </div>
     </main>
     <!-- Bulk Actions Bar -->
     <div id="bulkActions"
-        class="fixed bottom-16 left-0 right-0 bg-white shadow-lg p-3 hidden transform transition-transform duration-300">
+        class="fixed bottom-16 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg p-3 hidden transform transition-transform duration-300">
         <div class="flex justify-between items-center">
-            <span id="selectedCount" class="text-sm font-medium text-gray-700">0 selected</span>
+            <span id="selectedCount" class="text-sm font-medium text-gray-700 dark:text-gray-200">0 selected</span>
             <div class="flex space-x-2">
                 <button id="completeSelected" class="px-3 py-2 bg-secondary text-white rounded-lg text-sm">
                     Complete
@@ -169,7 +172,8 @@
                 <button id="deleteSelected" class="px-3 py-2 bg-red-500 text-white rounded-lg text-sm">
                     Delete
                 </button>
-                <button id="cancelSelection" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">
+                <button id="cancelSelection"
+                    class="px-3 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-lg text-sm">
                     Cancel
                 </button>
             </div>
@@ -185,23 +189,23 @@
     <!-- Add Task Modal -->
     <div id="addTaskModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-lg w-full max-w-md p-5">
+        <div class="bg-white dark:bg-gray-700 rounded-lg w-full max-w-md p-5 text-gray-900 dark:text-gray-100">
             <h2 class="text-xl font-bold mb-4">Add New Task</h2>
             <form id="taskForm">
                 <div class="mb-4">
-                    <label for="taskTitle" class="block text-sm font-medium text-gray-700 mb-1">Task Title</label>
+                    <label for="taskTitle" class="block text-sm font-medium mb-1">Task Title</label>
                     <input type="text" id="taskTitle" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-800"
                         placeholder="What needs to be done?">
                 </div>
                 <div class="mb-4">
-                    <label for="taskTime" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <label for="taskTime" class="block text-sm font-medium mb-1">Time</label>
                     <input type="time" id="taskTime"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-800">
                 </div>
                 <div class="flex space-x-3">
                     <button type="button" id="cancelTask"
-                        class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium">Cancel</button>
+                        class="flex-1 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-lg font-medium">Cancel</button>
                     <button type="submit" class="flex-1 py-3 bg-primary text-white rounded-lg font-medium">Add
                         Task</button>
                 </div>
@@ -211,23 +215,23 @@
     <!-- Edit Task Modal -->
     <div id="editTaskModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-lg w-full max-w-md p-5">
+        <div class="bg-white dark:bg-gray-700 rounded-lg w-full max-w-md p-5 text-gray-900 dark:text-gray-100">
             <h2 class="text-xl font-bold mb-4">Edit Task</h2>
             <form id="editTaskForm">
                 <input type="hidden" id="editTaskId">
                 <div class="mb-4">
-                    <label for="editTaskTitle" class="block text-sm font-medium text-gray-700 mb-1">Task Title</label>
+                    <label for="editTaskTitle" class="block text-sm font-medium mb-1">Task Title</label>
                     <input type="text" id="editTaskTitle" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-800">
                 </div>
                 <div class="mb-4">
-                    <label for="editTaskTime" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <label for="editTaskTime" class="block text-sm font-medium mb-1">Time</label>
                     <input type="time" id="editTaskTime"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-800">
                 </div>
                 <div class="flex space-x-3">
                     <button type="button" id="cancelEdit"
-                        class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium">Cancel</button>
+                        class="flex-1 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-lg font-medium">Cancel</button>
                     <button type="submit" class="flex-1 py-3 bg-primary text-white rounded-lg font-medium">Save
                         Changes</button>
                 </div>
@@ -237,20 +241,20 @@
     <!-- Settings Modal -->
     <div id="settingsModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-lg w-full max-w-md p-5">
+        <div class="bg-white dark:bg-gray-700 rounded-lg w-full max-w-md p-5 text-gray-900 dark:text-gray-100">
             <h2 class="text-xl font-bold mb-4">Settings</h2>
             <div class="space-y-4">
                 <div>
                     <h3 class="font-medium mb-2">Data Management</h3>
                     <button id="exportData"
-                        class="w-full py-3 bg-gray-100 text-gray-700 rounded-lg mb-2 text-left px-4">
+                        class="w-full py-3 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-lg mb-2 text-left px-4">
                         <i class="fas fa-download mr-2"></i> Export Data
                     </button>
                     <button id="importData"
-                        class="w-full py-3 bg-gray-100 text-gray-700 rounded-lg mb-2 text-left px-4">
+                        class="w-full py-3 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded-lg mb-2 text-left px-4">
                         <i class="fas fa-upload mr-2"></i> Import Data
                     </button>
-                    <button id="clearData" class="w-full py-3 bg-red-100 text-red-600 rounded-lg text-left px-4">
+                    <button id="clearData" class="w-full py-3 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-100 rounded-lg text-left px-4">
                         <i class="fas fa-trash mr-2"></i> Clear All Data
                     </button>
                 </div>
@@ -261,15 +265,39 @@
             </div>
         </div>
     </div>
-    <audio id="reminderSound" src="./noti.mp3" preload="auto"></audio>
+    <audio id="reminderSound" src="./tune.mp3" preload="auto"></audio>
     <script>
+        // Dark Mode Logic
+        const darkToggle = document.getElementById('darkModeToggle');
+        const darkIcon = document.getElementById('darkModeIcon');
+        const htmlElement = document.documentElement;
+        function setDarkMode(enabled) {
+            if (enabled) {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('darkMode', 'true');
+                darkIcon.classList.remove('fa-moon');
+                darkIcon.classList.add('fa-sun');
+            } else {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('darkMode', 'false');
+                darkIcon.classList.remove('fa-sun');
+                darkIcon.classList.add('fa-moon');
+            }
+        }
+        // Load saved preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            setDarkMode(true);
+        }
+        darkToggle.addEventListener('click', () => {
+            setDarkMode(!htmlElement.classList.contains('dark'));
+        });
         // Audio Context for Web Audio API
         let audioContext;
         let reminderSoundBuffer;
         // Initialize Audio Context
         function initAudioContext() {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            fetch('./noti.mp3')
+            fetch('./tune.mp3')
                 .then(response => response.arrayBuffer())
                 .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
                 .then(audioBuffer => {
@@ -384,15 +412,15 @@
                 return new Date(b.createdAt) - new Date(a.createdAt);
             });
             taskList.innerHTML = sortedTasks.map(task => `
-                <div class="task-item bg-white rounded-lg shadow-sm p-4 flex items-start animate-slide-in ${task.completed ? 'opacity-70' : ''}" data-id="${task.id}">
+                <div class="task-item bg-white dark:bg-gray-700 rounded-lg shadow-sm p-4 flex items-start animate-slide-in ${task.completed ? 'opacity-70' : ''}" data-id="${task.id}">
                     <input type="checkbox" class="mt-1 mr-3 task-checkbox ${isSelectionMode ? '' : 'hidden'}"
                            ${selectedTasks.has(task.id) ? 'checked' : ''}
                            data-id="${task.id}">
                     <div class="flex-1">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
-                                <h3 style="padding-left: 10px;" class="font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}">${escapeHtml(task.title)}</h3>
-                                ${task.time ? `<p class="text-sm text-gray-500 mt-1"><i class="far fa-clock mr-1"></i> ${formatTime(task.time)}</p>` : ''}
+                                <h3 style="padding-left: 10px;" class="font-medium ${task.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-800 dark:text-gray-100'}">${escapeHtml(task.title)}</h3>
+                                ${task.time ? `<p class="text-sm text-gray-500 dark:text-gray-300 mt-1"><i class="far fa-clock mr-1"></i> ${formatTime(task.time)}</p>` : ''}
                             </div>
                             <div class="flex space-x-2 ${isSelectionMode ? 'hidden' : ''}">
                                 <button class="edit-task p-2 text-gray-400 hover:text-primary" data-id="${task.id}">
@@ -544,7 +572,6 @@
             }
         }
         // Show reminder notification
-        // Updated showReminderNotification function
         function showReminderNotification(task) {
             // Play sound
             playReminderSound();
@@ -565,7 +592,6 @@
                 });
             }
             // Optional: Show a visual alert in the app (e.g., toast or highlight the task)
-            // Remove the alert() call to avoid blocking the sound
             const taskElement = document.querySelector(`.task-item[data-id="${task.id}"]`);
             if (taskElement) {
                 taskElement.classList.add('bg-yellow-100');
@@ -780,5 +806,4 @@
         }
     </script>
 </body>
-
 </html>
